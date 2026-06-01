@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报价合理性分析工作台</title>
+    <style>
+        :root {
+            --bg: #f3f6f8;
+            --panel: #ffffff;
+            --ink: #17212b;
+            --muted: #657387;
+            --line: #d9e2ea;
+            --soft-line: #edf1f5;
+            --primary: #0f766e;
+            --primary-dark: #0b5f59;
+            --blue: #2563eb;
+            --amber: #b7791f;
+            --red: #b42318;
+            --green: #11835b;
+            --shadow: 0 12px 34px rgba(31, 44, 58, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 64px;
+            padding: 0 28px;
+            color: #ffffff;
+            background: #12252e;
+            box-shadow: 0 8px 24px rgba(18, 37, 46, 0.16);
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .brand strong {
+            font-size: 17px;
+            letter-spacing: 0;
+        }
+
+        .brand span {
+            color: rgba(255, 255, 255, 0.68);
+            font-size: 12px;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .logout {
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 0 14px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 8px;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .layout {
+            width: min(1480px, calc(100vw - 40px));
+            margin: 26px auto 44px;
+        }
+
+        .notice {
+            margin-bottom: 18px;
+            padding: 15px 16px;
+            border: 1px solid rgba(15, 118, 110, 0.22);
+            border-radius: 8px;
+            color: #0b5f59;
+            background: #eefbf8;
+            line-height: 1.65;
+        }
+
+        .error-list {
+            margin-bottom: 18px;
+            padding: 14px 18px;
+            border: 1px solid rgba(180, 35, 24, 0.22);
+            border-radius: 8px;
+            color: var(--red);
+            background: #fff4f2;
+        }
+
+        .error-list ul {
+            margin: 8px 0 0;
+            padding-left: 20px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .market-card {
+            display: grid;
+            gap: 8px;
+            min-height: 156px;
+            padding: 14px;
+            border: 1px solid var(--soft-line);
+            border-radius: 8px;
+            background: #fbfcfd;
+        }
+
+        .market-name {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-weight: 760;
+        }
+
+        .market-price {
+            font-size: 24px;
+            font-weight: 780;
+        }
+
+        .market-contract {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .market-range {
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .market-change {
+            margin-top: 6px;
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        .market-status {
+            margin-top: 6px;
+        }
+
+        .driver-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .driver-card {
+            display: grid;
+            gap: 10px;
+            padding: 14px;
+            border: 1px solid var(--soft-line);
+            border-radius: 8px;
+            background: #fbfcfd;
+        }
+
+        .driver-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .driver-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 0 9px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            color: #33485c;
+            background: #ffffff;
+            font-size: 12px;
+        }
+
+        .metric {
+            min-height: 116px;
+            padding: 18px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .metric-value {
+            margin-top: 12px;
+            font-size: 30px;
+            line-height: 1;
+            font-weight: 760;
+        }
+
+        .metric-note {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.12fr) minmax(400px, 0.88fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--soft-line);
+        }
+
+        .panel-header h2,
+        .panel-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        .field-wide {
+            grid-column: span 2;
+        }
+
+        .field-full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #324255;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            min-height: 40px;
+            padding: 9px 11px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            color: var(--ink);
+            background: #fbfcfd;
+            font: inherit;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 76px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 3px solid rgba(15, 118, 110, 0.16);
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
+        .check-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 16px;
+            align-items: center;
+            padding: 10px 0 2px;
+        }
+
+        .check-item {
+            display: inline-flex;
+            gap: 7px;
+            align-items: center;
+            color: #34485b;
+            font-size: 14px;
+        }
+
+        .check-item input {
+            width: 16px;
+            min-height: 16px;
+            padding: 0;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            margin: 12px 0 0;
+            padding-top: 10px;
+            border-top: 1px solid var(--soft-line);
+            color: #0f3440;
+            font-weight: 760;
+        }
+
+        .source-card {
+            grid-column: span 2;
+            padding: 14px;
+            border: 1px solid var(--soft-line);
+            border-radius: 8px;
+            background: #fbfcfd;
+        }
+
+        .source-card h4 {
+            margin: 0 0 12px;
+            font-size: 14px;
+        }
+
+        .source-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 150px;
+            gap: 10px;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0 16px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .button-primary {
+            color: #ffffff;
+            background: var(--primary);
+        }
+
+        .button-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .button-secondary {
+            color: var(--primary);
+            border-color: rgba(15, 118, 110, 0.32);
+            background: #effaf8;
+        }
+
+        .button-danger {
+            color: var(--red);
+            border-color: rgba(180, 35, 24, 0.2);
+            background: #fff4f2;
+        }
+
+        .preview {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .preview-item {
+            min-height: 82px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fbfcfd;
+        }
+
+        .preview-item strong {
+            display: block;
+            margin-top: 7px;
+            font-size: 21px;
+        }
+
+        .formula-box {
+            margin-bottom: 18px;
+            padding: 14px;
+            border: 1px solid var(--soft-line);
+            border-radius: 8px;
+            background: #fbfcfd;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 13px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 0 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 760;
+        }
+
+        .status-good {
+            color: var(--green);
+            background: #edf9f2;
+        }
+
+        .status-high {
+            color: var(--amber);
+            background: #fff8e8;
+        }
+
+        .status-low {
+            color: var(--blue);
+            background: #edf4ff;
+        }
+
+        .status-danger {
+            color: var(--red);
+            background: #fff0ee;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 11px 10px;
+            border-bottom: 1px solid var(--soft-line);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .data-table th {
+            color: #4b5d70;
+            font-size: 12px;
+            font-weight: 760;
+            background: #f8fafb;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .text-muted {
+            color: var(--muted);
+        }
+
+        .small {
+            font-size: 12px;
+        }
+
+        .text-danger {
+            color: var(--red);
+        }
+
+        .text-success {
+            color: var(--green);
+        }
+
+        .source-link {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .list-row {
+            display: grid;
+            gap: 8px;
+            padding: 13px;
+            border: 1px solid var(--soft-line);
+            border-radius: 8px;
+            background: #fbfcfd;
+        }
+
+        .list-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .empty {
+            padding: 24px;
+            border: 1px dashed var(--line);
+            border-radius: 8px;
+            color: var(--muted);
+            text-align: center;
+            background: #fbfcfd;
+        }
+
+        @media (max-width: 1180px) {
+            .summary-grid,
+            .preview,
+            .market-grid,
+            .driver-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .topbar {
+                position: static;
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 12px;
+                padding: 18px;
+            }
+
+            .top-actions {
+                flex-wrap: wrap;
+            }
+
+            .layout {
+                width: min(100vw - 24px, 1480px);
+                margin-top: 14px;
+            }
+
+            .summary-grid,
+            .preview,
+            .market-grid,
+            .driver-grid,
+            .form-grid,
+            .source-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field-wide,
+            .field-full,
+            .source-card {
+                grid-column: auto;
+            }
+
+            .panel-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% macro source_row(prefix, label) %}
+        <div class="source-card">
+            <h4>{{ label }}来源</h4>
+            <div class="source-grid">
+                <div>
+                    <label for="{{ prefix }}_source_name">来源名称</label>
+                    <input id="{{ prefix }}_source_name" name="{{ prefix }}_source_name" value="{{ form_data.get(prefix ~ '_source_name', '') }}" required>
+                </div>
+                <div>
+                    <label for="{{ prefix }}_source_url">来源链接</label>
+                    <input id="{{ prefix }}_source_url" name="{{ prefix }}_source_url" type="url" value="{{ form_data.get(prefix ~ '_source_url', '') }}" required>
+                </div>
+                <div>
+                    <label for="{{ prefix }}_source_date">来源日期</label>
+                    <input id="{{ prefix }}_source_date" name="{{ prefix }}_source_date" type="date" value="{{ form_data.get(prefix ~ '_source_date', '') }}" required>
+                </div>
+            </div>
+        </div>
+    {% endmacro %}
+
+    <header class="topbar">
+        <div class="brand">
+            <strong>大型耐酸泵供应商报价合理性分析系统</strong>
+            <span>当前用户：{{ current_email }}</span>
+        </div>
+        <nav class="top-actions">
+            <a href="#market">交易所行情</a>
+            <a href="#components">部件波动</a>
+            <a href="#component-analysis">价格分析</a>
+            <a href="#quote-form">录入报价</a>
+            <a href="#history">历史记录</a>
+            <a href="#suppliers">供应商对比</a>
+            <a class="logout" href="{{ url_for('logout') }}">退出登录</a>
+        </nav>
+    </header>
+
+    <main class="layout">
+        <div class="notice">
+            当前版本执行“无来源不出数”：报价、材料单价、波动系数、工艺系数、地区系数、品牌系数、数量/交期系数、利润率和判断阈值都必须填写来源名称、链接和日期。系统只做计算和留痕，不再使用演示价格。
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="notice">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+
+        {% if errors %}
+            <div class="error-list">
+                <strong>请先补齐可追溯数据</strong>
+                <ul>
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <section class="summary-grid" aria-label="系统概览">
+            <article class="metric">
+                <div class="metric-label">真实报价记录</div>
+                <div class="metric-value">{{ total_quotes }}</div>
+                <div class="metric-note">已移除演示样本</div>
+            </article>
+            <article class="metric">
+                <div class="metric-label">平均供应商报价</div>
+                <div class="metric-value">¥{{ avg_quote|money0 }}</div>
+                <div class="metric-note">由已保存报价单计算</div>
+            </article>
+            <article class="metric">
+                <div class="metric-label">异常报价</div>
+                <div class="metric-value">{{ status_counts["偏高"] + status_counts["偏低"] }}</div>
+                <div class="metric-note">偏高 {{ status_counts["偏高"] }}，偏低 {{ status_counts["偏低"] }}</div>
+            </article>
+            <article class="metric">
+                <div class="metric-label">来源完整率</div>
+                <div class="metric-value">{{ source_completeness|percent }}</div>
+                <div class="metric-note">所有核心数字均需来源链接</div>
+            </article>
+        </section>
+
+        <section class="panel" id="market" style="margin-bottom:18px;">
+            <div class="panel-header">
+                <div>
+                    <h2>交易所原材料行情</h2>
+                    <div class="muted">数据优先来自上海期货交易所公开日行情；每个价格都链接到交易所原始数据或品种页。<a class="source-link" href="https://www.shfe.cn/eng/reports/delayedMarketData/DelayedQuotes/" target="_blank" rel="noopener">延时行情入口</a></div>
+                </div>
+                <form method="POST" action="{{ url_for('update_market') }}">
+                    <button class="button button-secondary" type="submit">更新交易所行情</button>
+                </form>
+            </div>
+            <div class="panel-body">
+                <div class="market-grid">
+                    {% for snap in market_snapshots %}
+<div class="market-card">
+  <div class="market-name">{{ snap.material_name }}</div>
+  <div class="market-contract">合约：{{ snap.contract_code or "—" }}</div>
+
+  {% if snap.price and snap.price > 0 %}
+    <div class="market-price">
+      最新价：
+      <a href="{{ snap.source_url }}" target="_blank" rel="noopener noreferrer">
+        {{ snap.price | money0 }} 元/吨
+      </a>
+      &nbsp;/&nbsp;
+      <a href="{{ snap.source_url }}" target="_blank" rel="noopener noreferrer">
+        {{ snap.price | per_gram }} 元/克
+      </a>
+    </div>
+
+    <div class="market-range">
+      参考采购区间：
+      <a href="{{ snap.product_url or snap.source_url }}" target="_blank" rel="noopener noreferrer">
+        {{ snap.price_range_low | money0 }} – {{ snap.price_range_high | money0 }} 元/吨
+      </a>
+      &nbsp;/&nbsp;
+      <a href="{{ snap.product_url or snap.source_url }}" target="_blank" rel="noopener noreferrer">
+        {{ snap.range_low_per_gram | format_gram }} – {{ snap.range_high_per_gram | format_gram }} 元/克
+      </a>
+    </div>
+
+    {% if snap.change_rate %}
+    <div class="market-change {% if snap.change_rate > 0 %}text-danger{% else %}text-success{% endif %}">
+      涨跌：{{ snap.change_rate | percent }}
+    </div>
+    {% endif %}
+
+    <div class="market-status text-muted small">
+      {{ snap.fetch_status }} · {{ snap.quote_date or "未更新" }}
+    </div>
+  {% else %}
+    <div class="text-muted">{{ snap.fetch_status }}{% if snap.error_message %} — {{ snap.error_message }}{% endif %}</div>
+  {% endif %}
+</div>
+{% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="panel" id="components" style="margin-bottom:18px;">
+            <div class="panel-header">
+                <div>
+                    <h2>8 类报价对象的原材料波动看板</h2>
+                    <div class="muted">这里展示会影响该类报价的交易所原材料。整泵、密封、电机等成品市场报价没有统一交易所，后续可接入 Mysteel、SMM、1688 或企业供应商报价 API。</div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="driver-grid">
+                    {% for card in component_market_cards %}
+                        <article class="driver-card">
+                            <div class="list-top">
+                                <strong>{{ card.component }}</strong>
+                                <span class="{% if card.avg_change > 0 %}status status-danger{% elif card.avg_change < 0 %}status status-low{% else %}status status-good{% endif %}">
+                                    原料均变 {{ card.avg_change|percent }}
+                                </span>
+                            </div>
+                            <div class="driver-tags">
+                                {% for driver in card.drivers %}
+                                    {% if driver.price and driver.source_url %}
+                                        <a class="driver-tag" href="{{ driver.source_url }}" target="_blank" rel="noopener">{{ driver.material_name }} ¥{{ driver.price|money0 }}</a>
+                                    {% else %}
+                                        <span class="driver-tag">{{ driver.material_name }} 暂无</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="muted">可追溯行情 {{ card.available_count }} / {{ card.drivers|length }}</div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        {% if analysis_context %}
+        <section class="panel" id="component-analysis" style="margin-bottom:18px;">
+            <div class="panel-header">
+                <div>
+                    <h2>零部件价格分析 — AI估算 vs 市场参考</h2>
+                    <div class="muted">基于实时期货价格 × 材料重量 × 加工/地区/品牌系数的自动估算，与行业基准区间和历史成交记录对比</div>
+                </div>
+                <form method="GET" action="{{ url_for('dashboard') }}#component-analysis" style="display:flex;gap:8px;align-items:center;">
+                    <select name="analysis_component" style="width:auto;min-width:180px;" onchange="this.form.submit()">
+                        {% for option in analysis_context.component_options %}
+                            <option value="{{ option }}" {% if analysis_context.selected_component == option %}selected{% endif %}>{{ option }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            <div class="panel-body">
+                <!-- Summary mini-cards: all 8 components at a glance -->
+                <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;">
+                    {% for summary in analysis_context.all_summaries %}
+                    <a href="{{ url_for('dashboard', analysis_component=summary.component) }}#component-analysis"
+                       style="padding:10px 12px;border:1px solid {% if summary.component == analysis_context.selected_component %}var(--primary){% else %}var(--soft-line){% endif %};border-radius:8px;
+                              background:{% if summary.component == analysis_context.selected_component %}#eefbf8{% else %}#fbfcfd{% endif %};
+                              text-decoration:none;color:inherit;transition:all 0.15s;">
+                        <div style="font-size:13px;font-weight:760;">{{ summary.component }}</div>
+                        <div style="font-size:20px;font-weight:780;margin-top:6px;color:var(--primary);">
+                            ¥{{ summary.estimated_price|money0 }}
+                        </div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;">
+                            市场参考 ¥{{ summary.market_low|money0 }}–{{ summary.market_high|money0 }}
+                            {% if summary.historical_avg > 0 %}<br>历史均价 ¥{{ summary.historical_avg|money0 }}{% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Two-column comparison: AI Estimate vs Market Reference -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+                    <!-- Left: AI Estimate -->
+                    <div style="border:1px solid var(--soft-line);border-radius:8px;padding:18px;background:#fbfcfd;">
+                        <h3 style="margin:0 0 4px;">AI 智能估算</h3>
+                        <div class="muted" style="font-size:12px;margin-bottom:14px;">
+                            基于实时期货价格 × BOM重量 × 加工/地区/品牌系数
+                        </div>
+                        <div style="font-size:34px;font-weight:780;color:var(--primary);">
+                            ¥{{ analysis_context.selected_analysis.estimated_price|money0 }}
+                        </div>
+
+                        <div style="margin-top:16px;">
+                            <strong style="font-size:13px;">材料成本明细</strong>
+                            <table style="width:100%;margin-top:6px;font-size:13px;" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>材料</th>
+                                        <th>重量(kg)</th>
+                                        <th>期货价(元/吨)</th>
+                                        <th>单价(元/kg)</th>
+                                        <th>小计(元)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in analysis_context.selected_analysis.material_breakdown %}
+                                    <tr>
+                                        <td><strong>{{ item.material }}</strong></td>
+                                        <td>
+                                            <input type="number" name="bom_{{ item.material }}" value="{{ '%.1f'|format(item.weight_kg) }}"
+                                                   step="0.1" min="0" form="component-params-form"
+                                                   style="width:72px;min-height:28px;font-size:12px;padding:2px 6px;">
+                                        </td>
+                                        <td>{{ item.price_per_ton|money0 }}</td>
+                                        <td>{{ '%.2f'|format(item.price_per_kg) }}</td>
+                                        <td class="muted">¥{{ item.subtotal|money }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="margin-top:12px;font-size:13px;line-height:1.8;">
+                            <div>材料成本合计：<strong>¥{{ analysis_context.selected_analysis.total_material_cost|money }}</strong></div>
+                            {% if analysis_context.selected_analysis.sub_type_label %}
+                            <div>基础加工费（{{ analysis_context.selected_analysis.sub_type_label }} ×{{ '%.1f'|format(analysis_context.selected_analysis.sub_multiplier) }}）：<strong>¥{{ analysis_context.selected_analysis.base_processing|money0 }}</strong></div>
+                            {% else %}
+                            <div>基础加工费（固定）：<strong>¥{{ analysis_context.selected_analysis.base_processing|money0 }}</strong></div>
+                            {% endif %}
+                            <div>浮动加工费（材料 × {{ '%.2f'|format(analysis_context.selected_analysis.used_factors.process_factor) }}）：<strong>¥{{ analysis_context.selected_analysis.variable_processing|money }}</strong></div>
+                            {% if analysis_context.selected_analysis.special_surcharge > 0 %}
+                            <div>特殊要求附加费：<strong>¥{{ analysis_context.selected_analysis.special_surcharge|money0 }}</strong></div>
+                            {% endif %}
+                            <div>加工成本合计：<strong>¥{{ analysis_context.selected_analysis.processing_cost|money }}</strong></div>
+                            <div>调整后成本：<strong>¥{{ analysis_context.selected_analysis.adjusted_cost|money }}</strong></div>
+                        </div>
+
+                        <details style="margin-top:14px;">
+                            <summary style="cursor:pointer;font-size:12px;color:var(--muted);">查看计算过程</summary>
+                            <pre style="margin-top:8px;padding:10px;background:#f0f4f8;border-radius:6px;font-size:12px;overflow-x:auto;line-height:1.7;">{{ analysis_context.selected_analysis.calculation_text }}</pre>
+                        </details>
+                    </div>
+
+                    <!-- Right: Market Reference -->
+                    <div style="border:1px solid var(--soft-line);border-radius:8px;padding:18px;background:#fbfcfd;">
+                        <h3 style="margin:0 0 4px;">市场参考价格</h3>
+                        <div class="muted" style="font-size:12px;margin-bottom:14px;">
+                            行业基准区间 + 历史成交记录对比
+                        </div>
+
+                        <div style="margin-bottom:18px;">
+                            <strong style="font-size:13px;">行业基准区间</strong>
+                            <div style="font-size:26px;font-weight:760;margin-top:6px;">
+                                ¥{{ analysis_context.market_range_low|money0 }} – ¥{{ analysis_context.market_range_high|money0 }}
+                            </div>
+                            <div class="muted" style="font-size:11px;margin-top:4px;">
+                                基于耐酸泵行业零部件市场调研的参考范围
+                            </div>
+
+                            {% set est = analysis_context.selected_analysis.estimated_price %}
+                            {% if est > 0 and analysis_context.market_range_high > 0 %}
+                            <div style="margin-top:10px;font-size:13px;">
+                                AI估算
+                                {% if est < analysis_context.market_range_low %}
+                                    <span style="color:var(--blue);font-weight:650;">低于市场区间</span>
+                                {% elif est > analysis_context.market_range_high %}
+                                    <span style="color:var(--red);font-weight:650;">高于市场区间</span>
+                                {% else %}
+                                    <span style="color:var(--green);font-weight:650;">处于市场区间内</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div style="margin-top:16px;">
+                            <strong style="font-size:13px;">历史成交记录</strong>
+                            <div style="margin-top:8px;">
+                                {% if analysis_context.historical_quotes %}
+                                    {% for hq in analysis_context.historical_quotes %}
+                                    <div style="padding:10px 0;border-bottom:1px solid var(--soft-line);font-size:13px;">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                                            <strong>{{ hq.supplier.name }}</strong>
+                                            <span style="font-weight:760;">¥{{ (hq.final_price or hq.supplier_quote)|money }}</span>
+                                        </div>
+                                        <div class="muted" style="font-size:11px;margin-top:2px;">
+                                            {{ hq.quote_date.strftime('%Y-%m-%d') }} | {{ hq.model }} | {{ hq.material }}
+                                            {% if hq.quote_source_url %}
+                                            · <a href="{{ hq.quote_source_url }}" target="_blank" rel="noopener" class="source-link">来源</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="empty" style="padding:20px;font-size:13px;">
+                                        暂无 "{{ analysis_context.selected_component }}" 的真实历史成交记录。<br><br>
+                                        在下方录入带来源链接的报价后，这里将自动显示该零部件的市场参考数据。
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editable parameter bar -->
+                <form id="component-params-form" method="GET" action="{{ url_for('dashboard') }}#component-analysis"
+                      style="margin-top:16px;padding:14px 16px;border:1px solid var(--soft-line);border-radius:8px;background:#fbfcfd;">
+                    <input type="hidden" name="analysis_component" value="{{ analysis_context.selected_component }}">
+                    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                        <span style="font-size:13px;font-weight:650;color:#4b5d70;">调整参数：</span>
+                        {% set sub_types = analysis_context.selected_analysis.sub_types %}
+                        {% if sub_types %}
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label style="font-size:12px;margin:0;white-space:nowrap;">子类型</label>
+                            <select name="sub_type" style="width:auto;min-height:34px;font-size:12px;">
+                                {% for st in sub_types %}
+                                    <option value="{{ st.label }}" {% if analysis_context.selected_analysis.sub_type_label == st.label %}selected{% endif %}>
+                                        {{ st.label }} (×{{ '%.1f'|format(st.multiplier) }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label style="font-size:12px;margin:0;white-space:nowrap;">基础加工费</label>
+                            <input type="number" name="base_proc" value="{{ '%.0f'|format(analysis_context.selected_analysis.raw_base_processing) }}"
+                                   step="100" min="0" style="width:90px;min-height:34px;font-size:13px;">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label style="font-size:12px;margin:0;white-space:nowrap;">工艺系数</label>
+                            <input type="number" name="pf" value="{{ '%.2f'|format(analysis_context.selected_analysis.used_factors.process_factor) }}"
+                                   step="0.01" min="0" style="width:80px;min-height:34px;font-size:13px;">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label style="font-size:12px;margin:0;white-space:nowrap;">地区系数</label>
+                            <input type="number" name="rf" value="{{ '%.2f'|format(analysis_context.selected_analysis.used_factors.region_factor) }}"
+                                   step="0.01" min="0" style="width:80px;min-height:34px;font-size:13px;">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label style="font-size:12px;margin:0;white-space:nowrap;">品牌系数</label>
+                            <input type="number" name="bf" value="{{ '%.2f'|format(analysis_context.selected_analysis.used_factors.brand_factor) }}"
+                                   step="0.01" min="0" style="width:80px;min-height:34px;font-size:13px;">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label style="font-size:12px;margin:0;white-space:nowrap;">利润率</label>
+                            <input type="number" name="pr" value="{{ '%.2f'|format(analysis_context.selected_analysis.used_factors.profit_rate) }}"
+                                   step="0.01" min="0" style="width:80px;min-height:34px;font-size:13px;">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <label style="font-size:12px;margin:0;white-space:nowrap;">特殊附加费</label>
+                            <input type="number" name="surcharge" value="{{ '%.0f'|format(analysis_context.selected_analysis.special_surcharge) }}"
+                                   step="100" min="0" style="width:90px;min-height:34px;font-size:13px;">
+                        </div>
+                        <button class="button button-primary" type="submit" style="min-height:34px;font-size:13px;">重新计算</button>
+                        <a href="{{ url_for('dashboard', analysis_component=analysis_context.selected_component) }}#component-analysis"
+                           class="button button-secondary" style="min-height:34px;font-size:13px;">恢复默认</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="main-grid">
+            <div class="stack">
+                <section class="panel" id="quote-form">
+                    <div class="panel-header">
+                        <h2>报价录入与可追溯分析</h2>
+                        {% if preview %}
+                            {% set preview_status = preview.status %}
+                            <span class="status {% if preview_status == '合理' %}status-good{% elif preview_status in ['严重偏高'] %}status-danger{% elif preview_status in ['偏高'] %}status-high{% else %}status-low{% endif %}">
+                                预判：{{ preview_status }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="panel-body">
+                        {% if preview %}
+                            <div class="preview">
+                                <div class="preview-item">
+                                    <span class="muted">材料成本</span>
+                                    <strong>¥{{ preview.material_cost|money }}</strong>
+                                </div>
+                                <div class="preview-item">
+                                    <span class="muted">加工成本</span>
+                                    <strong>¥{{ preview.processing_cost|money }}</strong>
+                                </div>
+                                <div class="preview-item">
+                                    <span class="muted">合理报价</span>
+                                    <strong>¥{{ preview.reasonable_price|money }}</strong>
+                                </div>
+                                <div class="preview-item">
+                                    <span class="muted">偏离幅度</span>
+                                    <strong>{{ preview.deviation_rate|percent }}</strong>
+                                </div>
+                            </div>
+                            <div class="formula-box">{{ preview.calculation_text }}</div>
+                        {% endif %}
+
+                        <form method="POST">
+                            <div class="form-grid">
+                                <div class="section-title">产品基本信息</div>
+                                <div class="field">
+                                    <label for="product_name">产品名称</label>
+                                    <input id="product_name" name="product_name" value="{{ form_data.get('product_name', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="model">型号</label>
+                                    <input id="model" name="model" value="{{ form_data.get('model', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="flow_rate">流量</label>
+                                    <input id="flow_rate" name="flow_rate" type="number" step="0.01" value="{{ form_data.get('flow_rate', '') }}">
+                                </div>
+                                <div class="field">
+                                    <label for="head">扬程</label>
+                                    <input id="head" name="head" type="number" step="0.01" value="{{ form_data.get('head', '') }}">
+                                </div>
+                                <div class="field">
+                                    <label for="power">功率</label>
+                                    <input id="power" name="power" type="number" step="0.01" value="{{ form_data.get('power', '') }}">
+                                </div>
+                                <div class="field">
+                                    <label for="temperature">温度</label>
+                                    <input id="temperature" name="temperature" type="number" step="0.01" value="{{ form_data.get('temperature', '') }}">
+                                </div>
+                                <div class="field">
+                                    <label for="medium">输送介质</label>
+                                    <input id="medium" name="medium" value="{{ form_data.get('medium', '') }}">
+                                </div>
+                                <div class="field">
+                                    <label for="ph_value">PH值</label>
+                                    <input id="ph_value" name="ph_value" type="number" step="0.1" value="{{ form_data.get('ph_value', '') }}">
+                                </div>
+
+                                <div class="section-title">零部件与报价信息</div>
+                                <div class="field">
+                                    <label for="component_name">部件名称</label>
+                                    <select id="component_name" name="component_name" required>
+                                        {% for option in component_options %}
+                                            <option value="{{ option }}" {% if form_data.get('component_name', '整泵报价') == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="material">材料</label>
+                                    <select id="material" name="material" required>
+                                        {% for option in material_options %}
+                                            <option value="{{ option }}" {% if form_data.get('material', '316L') == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="weight">重量</label>
+                                    <input id="weight" name="weight" type="number" step="0.01" value="{{ form_data.get('weight', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="process">工艺</label>
+                                    <select id="process" name="process" required>
+                                        {% for option in process_options %}
+                                            <option value="{{ option }}" {% if form_data.get('process', 'CNC加工') == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="brand">品牌</label>
+                                    <select id="brand" name="brand" required>
+                                        {% for option in brand_options %}
+                                            <option value="{{ option }}" {% if form_data.get('brand', '国产普通') == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="origin">国产/进口</label>
+                                    <select id="origin" name="origin" required>
+                                        <option value="国产" {% if form_data.get('origin', '国产') == '国产' %}selected{% endif %}>国产</option>
+                                        <option value="进口" {% if form_data.get('origin') == '进口' %}selected{% endif %}>进口</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="quantity">数量</label>
+                                    <input id="quantity" name="quantity" type="number" min="1" value="{{ form_data.get('quantity', '1') }}">
+                                </div>
+                                <div class="field">
+                                    <label for="quote_date">报价日期</label>
+                                    <input id="quote_date" name="quote_date" type="date" value="{{ form_data.get('quote_date', today) }}">
+                                </div>
+
+                                <div class="field">
+                                    <label for="supplier_quote">供应商报价</label>
+                                    <input id="supplier_quote" name="supplier_quote" type="number" step="0.01" value="{{ form_data.get('supplier_quote', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="final_price">最终成交价</label>
+                                    <input id="final_price" name="final_price" type="number" step="0.01" value="{{ form_data.get('final_price', '') }}">
+                                </div>
+                                <div class="field-wide">
+                                    <label for="payment_terms">付款方式</label>
+                                    <input id="payment_terms" name="payment_terms" value="{{ form_data.get('payment_terms', '') }}">
+                                </div>
+                                <div class="field-full check-row">
+                                    <label class="check-item"><input type="checkbox" name="includes_tax" {% if form_data.get('includes_tax') %}checked{% endif %}>含税</label>
+                                    <label class="check-item"><input type="checkbox" name="includes_freight" {% if form_data.get('includes_freight') %}checked{% endif %}>含运费</label>
+                                    <label class="check-item"><input type="checkbox" name="is_urgent" {% if form_data.get('is_urgent') %}checked{% endif %}>加急订单</label>
+                                </div>
+                                {{ source_row('quote', '供应商报价/产品规格') }}
+
+                                <div class="section-title">供应商信息</div>
+                                <div class="field">
+                                    <label for="supplier_name">供应商名称</label>
+                                    <input id="supplier_name" name="supplier_name" value="{{ form_data.get('supplier_name', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="region">所在地区</label>
+                                    <select id="region" name="region" required>
+                                        {% for option in region_options %}
+                                            <option value="{{ option }}" {% if form_data.get('region', '江苏') == option %}selected{% endif %}>{{ option }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label for="quality_rating">历史质量评价</label>
+                                    <input id="quality_rating" name="quality_rating" type="number" min="0" step="0.1" value="{{ form_data.get('quality_rating', '') }}">
+                                </div>
+                                <div class="field">
+                                    <label for="delivery_rating">历史交期评价</label>
+                                    <input id="delivery_rating" name="delivery_rating" type="number" min="0" step="0.1" value="{{ form_data.get('delivery_rating', '') }}">
+                                </div>
+                                <div class="field-full check-row">
+                                    <label class="check-item"><input type="checkbox" name="is_long_term" {% if form_data.get('is_long_term') %}checked{% endif %}>长期合作</label>
+                                </div>
+                                {{ source_row('rating', '供应商评价') }}
+
+                                <div class="section-title">成本计算参数</div>
+                                <div class="field">
+                                    <label for="material_unit_price">材料单价</label>
+                                    <input id="material_unit_price" name="material_unit_price" type="number" min="0" step="0.0001" value="{{ form_data.get('material_unit_price', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="material_trend_factor">原材料波动系数</label>
+                                    <input id="material_trend_factor" name="material_trend_factor" type="number" min="0" step="0.0001" value="{{ form_data.get('material_trend_factor', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="process_factor">工艺系数</label>
+                                    <input id="process_factor" name="process_factor" type="number" min="0" step="0.0001" value="{{ form_data.get('process_factor', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="region_factor">地区成本系数</label>
+                                    <input id="region_factor" name="region_factor" type="number" min="0" step="0.0001" value="{{ form_data.get('region_factor', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="brand_factor">品牌溢价系数</label>
+                                    <input id="brand_factor" name="brand_factor" type="number" min="0" step="0.0001" value="{{ form_data.get('brand_factor', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="quantity_factor_value">数量折扣系数</label>
+                                    <input id="quantity_factor_value" name="quantity_factor_value" type="number" min="0" step="0.0001" value="{{ form_data.get('quantity_factor_value', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="urgent_factor">交期加急系数</label>
+                                    <input id="urgent_factor" name="urgent_factor" type="number" min="0" step="0.0001" value="{{ form_data.get('urgent_factor', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="profit_rate">利润率</label>
+                                    <input id="profit_rate" name="profit_rate" type="number" min="0" step="0.0001" value="{{ form_data.get('profit_rate', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="normal_threshold">合理偏差阈值</label>
+                                    <input id="normal_threshold" name="normal_threshold" type="number" min="0" step="0.0001" value="{{ form_data.get('normal_threshold', '') }}" required>
+                                </div>
+                                <div class="field">
+                                    <label for="critical_threshold">严重偏差阈值</label>
+                                    <input id="critical_threshold" name="critical_threshold" type="number" min="0" step="0.0001" value="{{ form_data.get('critical_threshold', '') }}" required>
+                                </div>
+
+                                {{ source_row('material', '材料单价') }}
+                                {{ source_row('trend', '原材料波动系数') }}
+                                {{ source_row('process', '工艺系数') }}
+                                {{ source_row('region', '地区成本系数') }}
+                                {{ source_row('brand', '品牌溢价系数') }}
+                                {{ source_row('quantity', '数量折扣系数') }}
+                                {{ source_row('urgent', '交期加急系数') }}
+                                {{ source_row('profit', '利润率') }}
+                                {{ source_row('rule', '判断阈值规则') }}
+
+                                <div class="section-title">质量信息</div>
+                                <div class="field">
+                                    <label for="service_life">使用寿命（月）</label>
+                                    <input id="service_life" name="service_life" type="number" step="0.1" value="{{ form_data.get('service_life', '') }}">
+                                </div>
+                                <div class="field-wide">
+                                    <label for="customer_feedback">客户反馈</label>
+                                    <input id="customer_feedback" name="customer_feedback" value="{{ form_data.get('customer_feedback', '') }}">
+                                </div>
+                                <div class="field-full check-row">
+                                    <label class="check-item"><input type="checkbox" name="repaired" {% if form_data.get('repaired') %}checked{% endif %}>发生返修</label>
+                                    <label class="check-item"><input type="checkbox" name="leaked" {% if form_data.get('leaked') %}checked{% endif %}>发生泄漏</label>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="button button-secondary" name="action" value="preview" type="submit">预判报价</button>
+                                <button class="button button-primary" name="action" value="save" type="submit">保存记录</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="panel" id="history">
+                    <div class="panel-header">
+                        <h2>历史采购价格库</h2>
+                        <span class="muted">最近 {{ quotes|length }} 条</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>供应商</th>
+                                    <th>对象</th>
+                                    <th>报价/参考</th>
+                                    <th>判断</th>
+                                    <th>来源</th>
+                                    <th>操作</th>
+                                    <th>最新行情区间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quote in quotes %}
+                                    <tr>
+                                        <td>{{ quote.quote_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <strong>{{ quote.supplier.name }}</strong><br>
+                                            <span class="muted">{{ quote.supplier.region }}</span>
+                                        </td>
+                                        <td>
+                                            {{ quote.product_name }}<br>
+                                            <span class="muted">{{ quote.model }} / {{ quote.component_name }} / {{ quote.material }}</span>
+                                        </td>
+                                        <td>
+                                            报价 ¥{{ quote.supplier_quote|money }}<br>
+                                            <span class="muted">合理价 ¥{{ quote.reasonable_price|money }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="status {% if quote.analysis_status == '合理' %}status-good{% elif quote.analysis_status in ['严重偏高'] %}status-danger{% elif quote.analysis_status in ['偏高'] %}status-high{% else %}status-low{% endif %}">
+                                                {{ quote.analysis_status }}
+                                            </span><br>
+                                            <span class="muted">{{ quote.deviation_rate|percent }}</span>
+                                        </td>
+                                        <td>
+                                            {% if quote.quote_source_url %}
+                                                <a class="source-link" href="{{ quote.quote_source_url }}" target="_blank" rel="noopener">报价来源</a><br>
+                                            {% else %}
+                                                <span class="muted">报价来源缺失</span><br>
+                                            {% endif %}
+                                            {% if quote.material_source_url %}
+                                                <a class="source-link" href="{{ quote.material_source_url }}" target="_blank" rel="noopener">材料来源</a>
+                                            {% else %}
+                                                <span class="muted">材料来源缺失</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('delete_quote', quote_id=quote.id) }}">
+                                                <button class="button button-danger" type="submit">删除</button>
+                                            </form>
+                                        </td>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7">
+                                            <div class="empty">暂无真实报价记录。请先录入带来源链接的数据。</div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="stack">
+                <section class="panel">
+                    <div class="panel-header">
+                        <h3>报价预警</h3>
+                        <span class="muted">{{ latest_alerts|length }} 条</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="list">
+                            {% for quote in latest_alerts %}
+                                <div class="list-row">
+                                    <div class="list-top">
+                                        <strong>{{ quote.supplier.name }}</strong>
+                                        <span class="status {% if quote.analysis_status in ['严重偏高'] %}status-danger{% elif quote.analysis_status in ['偏高'] %}status-high{% else %}status-low{% endif %}">
+                                            {{ quote.analysis_status }}
+                                        </span>
+                                    </div>
+                                    <div class="muted">{{ quote.model }} / {{ quote.component_name }} / {{ quote.material }}</div>
+                                    <div>报价 ¥{{ quote.supplier_quote|money }}，偏离 {{ quote.deviation_rate|percent }}</div>
+                                    {% if quote.rule_source_url %}
+                                        <a class="source-link" href="{{ quote.rule_source_url }}" target="_blank" rel="noopener">查看判断规则来源</a>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="empty">暂无异常报价</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel" id="suppliers">
+                    <div class="panel-header">
+                        <h3>供应商对比</h3>
+                        <span class="muted">只展示可追溯评价</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="list">
+                            {% for item in supplier_rows %}
+                                <div class="list-row">
+                                    <div class="list-top">
+                                        <div>
+                                            <strong>{{ item.supplier.name }}</strong>
+                                            <div class="muted">{{ item.supplier.region }} / {{ "长期合作" if item.supplier.is_long_term else "普通合作" }}</div>
+                                        </div>
+                                        {% if item.supplier.rating_source_url %}
+                                            <a class="source-link" href="{{ item.supplier.rating_source_url }}" target="_blank" rel="noopener">评价来源</a>
+                                        {% endif %}
+                                    </div>
+                                    <div>质量评价：{{ item.supplier.quality_rating }}，交期评价：{{ item.supplier.delivery_rating }}</div>
+                                    <div class="muted">报价 {{ item.quote_count }} 条，平均 ¥{{ item.avg_price|money }}，异常 {{ item.abnormal_count }} 条，质量问题 {{ item.repair_count }} 次</div>
+                                </div>
+                            {% else %}
+                                <div class="empty">暂无供应商数据</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <h3>计算口径</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="data-table">
+                            <tbody>
+                                <tr>
+                                    <th>材料成本</th>
+                                    <td>重量 × 材料单价 × 原材料波动系数</td>
+                                </tr>
+                                <tr>
+                                    <th>加工成本</th>
+                                    <td>材料成本 × 工艺系数</td>
+                                </tr>
+                                <tr>
+                                    <th>调整后成本</th>
+                                    <td>材料成本与加工成本之和，再乘地区、品牌、数量、交期系数</td>
+                                </tr>
+                                <tr>
+                                    <th>合理报价</th>
+                                    <td>调整后成本 ×（1 + 利润率）</td>
+                                </tr>
+                                <tr>
+                                    <th>判断规则</th>
+                                    <td>供应商报价相对合理报价的偏离幅度，与录入的偏差阈值比较</td>
+                                </tr>
+                                <tr>
+                                    <th>历史均价</th>
+                                    <td>同型号、同部件、同材料的已保存报价单计算，仅用于对照，不混入成本参考价</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </aside>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大型耐酸泵供应商报价合理性分析系统</title>
+    <style>
+        :root {
+            --bg: #eef3f7;
+            --panel: #ffffff;
+            --ink: #17212b;
+            --muted: #637083;
+            --line: #d8e0e8;
+            --primary: #0f766e;
+            --primary-dark: #0b5f59;
+            --danger: #b42318;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            color: var(--ink);
+            background:
+                linear-gradient(140deg, rgba(15, 118, 110, 0.12), rgba(56, 118, 176, 0.12)),
+                var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        .login-shell {
+            width: min(920px, calc(100vw - 32px));
+            min-height: 520px;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            overflow: hidden;
+            border: 1px solid rgba(120, 140, 160, 0.28);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: 0 24px 70px rgba(23, 33, 43, 0.14);
+        }
+
+        .brand-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 42px;
+            color: #ffffff;
+            background:
+                linear-gradient(rgba(12, 64, 61, 0.66), rgba(12, 64, 61, 0.8)),
+                url("https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=1200&q=80") center / cover;
+        }
+
+        .brand-name {
+            font-size: 15px;
+            letter-spacing: 0;
+            opacity: 0.88;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(30px, 5vw, 46px);
+            line-height: 1.14;
+            letter-spacing: 0;
+        }
+
+        .brand-copy {
+            max-width: 390px;
+            margin-top: 20px;
+            font-size: 17px;
+            line-height: 1.75;
+            color: rgba(255, 255, 255, 0.84);
+        }
+
+        .login-panel {
+            padding: 52px 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-title {
+            margin: 0 0 10px;
+            font-size: 26px;
+        }
+
+        .login-subtitle {
+            margin: 0 0 32px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #314154;
+            font-weight: 650;
+        }
+
+        input {
+            width: 100%;
+            min-height: 46px;
+            padding: 11px 13px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            color: var(--ink);
+            font-size: 16px;
+            background: #fbfcfd;
+        }
+
+        input:focus {
+            outline: 3px solid rgba(15, 118, 110, 0.18);
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
+        .button {
+            width: 100%;
+            min-height: 46px;
+            margin-top: 18px;
+            border: 0;
+            border-radius: 8px;
+            color: #ffffff;
+            background: var(--primary);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: var(--primary-dark);
+        }
+
+        .alert {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border: 1px solid rgba(180, 35, 24, 0.22);
+            border-radius: 8px;
+            color: var(--danger);
+            background: #fff4f2;
+        }
+
+        .domain {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        @media (max-width: 760px) {
+            .login-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-panel {
+                min-height: 280px;
+                padding: 30px;
+            }
+
+            .login-panel {
+                padding: 34px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="login-shell">
+        <section class="brand-panel">
+            <div class="brand-name">采购价格判断体系</div>
+            <div>
+                <h1>大型耐酸泵供应商报价合理性分析系统</h1>
+                <p class="brand-copy">围绕材料、工艺、重量、地区、品牌、历史成交和供应商表现，形成企业内部报价判断依据。</p>
+            </div>
+        </section>
+
+        <section class="login-panel">
+            <h2 class="login-title">登录系统</h2>
+            <p class="login-subtitle">使用公司邮箱进入采购分析工作台。</p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <label for="email">公司邮箱</label>
+                <input id="email" type="email" name="email" placeholder="name@danaipumps.cn" required>
+                <button class="button" type="submit">进入系统</button>
+                <div class="domain">允许域名：@danaipumps.cn</div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
